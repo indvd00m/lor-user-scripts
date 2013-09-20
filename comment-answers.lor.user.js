@@ -3,7 +3,7 @@
 // @description Ответы на комментарии для linux.org.ru. Отображаются только те ответы, которые есть на текущей странице.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.2
+// @version 0.3
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -21,8 +21,8 @@ var execute = function (body) {
 
 (function (window, undefined) {
     var w;
-    if (typeof unsafeWindow != undefined) {
-        w = unsafeWindow
+    if (typeof unsafeWindow != "undefined") {
+        w = unsafeWindow;
     } else {
         w = window;
     }
