@@ -43,6 +43,8 @@ var execute = function (body) {
 				var replyMsgId = replyUrl.match(/.*[\?\&]?cid=(\d+).*/)[1];
 
 				var nick = $("a[itemprop='creator']", $(this).next()).text();
+				if (nick == null || nick == "")
+					nick = "?";
 				var msgId = $(this).parent().prop("id").match(/comment-(\d+)/)[1];
 				var anchorName = "anchor-msg-" + msgId;
 				var anchor = $("<a name='" + anchorName + "'></a>");
