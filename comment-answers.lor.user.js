@@ -1,36 +1,74 @@
 // ==UserScript==
-// @name comment-answers
-// @description Ответы на комментарии 
+// @name LOR comment-answers
+// @description Ответы на комментарии для linux.org.ru. Отображаются только те ответы, которые есть на текущей странице.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
-// @license GPL
-// @version 0.1
+// @license Creative Commons Attribution 3.0 Unported
+// @version 0.2
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
 // @include https://www.linux.org.ru/*
 // ==/UserScript==
-// [1] Оборачиваем скрипт в замыкание, для кроссбраузерности (opera, ie)
-(function (window, undefined) {  // [2] нормализуем window
+
+// running js-code in a page context 
+var execute = function (body) {
+	if(typeof body === "function") { body = "(" + body + ")();"; }
+	var el = document.createElement("script");
+	el.textContent = body;
+	document.body.appendChild(el);
+	return el;
+};
+
+(function (window, undefined) {
     var w;
     if (typeof unsafeWindow != undefined) {
         w = unsafeWindow
     } else {
         w = window;
     }
-    // В юзерскрипты можно вставлять практически любые javascript-библиотеки.
-    // Код библиотеки копируется прямо в юзерскрипт.
-    // При подключении библиотеки нужно передать w в качестве параметра окна window
-    // Пример: подключение jquery.min.js
-    // (function(a,b){function ci(a) ... a.jQuery=a.$=d})(w);
 
-    // [3] не запускаем скрипт во фреймах
-    // без этого условия скрипт будет запускаться несколько раз на странице с фреймами
     if (w.self != w.top) {
         return;
     }
-    // [4] дополнительная проверка наряду с @include
+
     if (/https?:\/\/(www\.)?linux.org.ru/.test(w.location.href)) {
-        //Ниже идёт непосредственно код скрипта
-        alert("Userscripts приветствует вас навязчивым окном.");
+
+		execute(function() {
+
+			var url = $(location).attr("href").replace(/#.*$/, "");
+
+			$(".title").has("a[data-samepage='samePage']").each(function(index) {
+
+				var replyUrl = $("a", $(this)).prop("href");
+				var replyMsgId = replyUrl.match(/.*[\?\&]?cid=(\d+).*/)[1];
+
+				var nick = $("a[itemprop='creator']", $(this).next()).text();
+				var msgId = $(this).parent().prop("id").match(/comment-(\d+)/)[1];
+				var anchorName = "anchor-msg-" + msgId;
+				var anchor = $("<a name='" + anchorName + "'></a>");
+				$(this).prepend(anchor);
+
+				$("#comment-" + replyMsgId).each(function() {
+
+					var href = url + "#" + anchorName;
+					var link = $("<a href='" + href + "'>" + nick + "</a>");
+
+					var container = $(".msg_body", $(this));
+					var answersClass = "answers";
+					var answers = $("." + answersClass, container);
+					if (!answers.length) {
+						answers = $("<div class='" + answersClass + "'>Ответы: </div>");
+						answers.css("font-size", "smaller");
+						container.append(answers);
+					}
+					if (answers.children().length) {
+						answers.append(", ");
+					}
+					answers.append(link);
+				});
+			});
+		});
+
     }
 })(window);
+
