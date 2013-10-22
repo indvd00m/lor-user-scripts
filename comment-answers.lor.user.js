@@ -35,6 +35,9 @@ var execute = function (body) {
 
 		execute(function() {
 
+			var opacity = 0.5;
+			var multiplier = 50;
+
 			var url = $(location).attr("href").replace(/#.*$/, "");
 
 			$(".title").has("a[data-samepage='samePage']").each(function(index) {
@@ -50,10 +53,30 @@ var execute = function (body) {
 				var anchor = $("<a name='" + anchorName + "'></a>");
 				$(this).prepend(anchor);
 
+				$(this).click(function() {
+					var replyMsgBody = $('.sign', $('#comment-' + replyMsgId)).prevAll();
+					var lengthReplyMsgBody = replyMsgBody.text().length;
+					replyMsgBody.delay(lengthReplyMsgBody * multiplier).fadeTo('fast', opacity);
+
+					var msgBody = $('.sign', $('#comment-' + msgId)).prevAll();
+					var lengthMsgBody = msgBody.text().length;
+					msgBody.fadeTo('fast', opacity);
+				});
+
 				$("#comment-" + replyMsgId).each(function() {
 
 					var href = url + "#" + anchorName;
 					var link = $("<a href='" + href + "'>" + nick + "</a>");
+
+					link.click(function() {
+						var replyMsgBody = $('.sign', $('#comment-' + replyMsgId));
+						var lengthReplyMsgBody = replyMsgBody.text().length;
+						replyMsgBody.prevAll().fadeTo('fast', opacity);
+
+						var msgBody = $('.sign', $('#comment-' + msgId)).prevAll();
+						var lengthMsgBody = msgBody.text().length;
+						msgBody.delay(lengthMsgBody * multiplier).fadeTo('fast', opacity);
+					});
 
 					var container = $(".msg_body", $(this));
 					var answersClass = "answers";
