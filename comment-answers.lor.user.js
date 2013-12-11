@@ -3,7 +3,7 @@
 // @description Ответы на комментарии для linux.org.ru. Отображаются только те ответы, которые есть на текущей странице.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.3
+// @version 0.4
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -49,9 +49,7 @@ var execute = function (body) {
 				if (nick == null || nick == "")
 					nick = "?";
 				var msgId = $(this).parent().prop("id").match(/comment-(\d+)/)[1];
-				var anchorName = "anchor-msg-" + msgId;
-				var anchor = $("<a name='" + anchorName + "'></a>");
-				$(this).prepend(anchor);
+				var anchorName = "comment-" + msgId;
 
 				$(this).click(function() {
 					var replyMsgBody = $('.sign', $('#comment-' + replyMsgId)).prevAll();
