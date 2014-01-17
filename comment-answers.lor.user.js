@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name LOR comment-answers
-// @description Ответы на комментарии для linux.org.ru. Отображаются только те ответы, которые есть на текущей странице.
+// @description Ответы на комментарии для linux.org.ru. Все страницы после текущей загружаются в фоне, что может увеличить трафик.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.5
+// @version 0.6
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -82,30 +82,54 @@ var execute = function (body) {
 				}
 			};
 
-			var url = $(location).attr("href").replace(/#.*$/, "");
+			$(".msg[id^='comment-']").each(function(index) {
+				var commentId = $(this).prop("id").match(/comment-(\d+)/)[1];
+				if (localStorage.getItem(keyPrefix + commentId)) {
+					markCommentAsReaded(commentId);
+				}
+			});
 
-			$(".title").has("a[data-samepage='samePage']").each(function(index) {
+			var url = $(location).attr("href");
+			if (/.*#comment-(\d+)/.test(url)) {
+				var pageCommentId = url.match(/.*#comment-(\d+)/)[1];
+				if (pageCommentId) {
+					markCommentAsReaded(pageCommentId, true);
+				}
+			}
+			url = url.replace(/#.*$/, "");
 
-				var replyUrl = $("a", $(this)).prop("href");
+			var processReplyMessage = function (msgTitle, msgPageUrl, otherPage) {
+
+				var replyUrl = $("a", msgTitle).prop("href");
 				var replyCommentId = replyUrl.match(/.*[\?\&]?cid=(\d+).*/)[1];
 
-				var nick = $("a[itemprop='creator']", $(this).next()).text();
+				var nick = $("a[itemprop='creator']", msgTitle.next()).text();
 				if (nick == null || nick == "")
 					nick = "?";
-				var commentId = $(this).parent().prop("id").match(/comment-(\d+)/)[1];
+				var commentId = msgTitle.parent().prop("id").match(/comment-(\d+)/)[1];
 				var anchorName = "comment-" + commentId;
 
-				$(this).click(function() {
+				msgTitle.click(function() {
 					markCommentAsReaded(replyCommentId, true);
 					markCommentAsReaded(commentId);
 				});
 
 				$("#comment-" + replyCommentId).each(function() {
 
-					var href = url + "#" + anchorName;
-					var link = $("<a href='" + href + "'>" + nick + "</a>");
+					var href = msgPageUrl + "#" + anchorName;
+					var link;
+					if (otherPage) {
+						link = $("<span>→<a href='" + href + "'>" + nick + "</a></span>");
+						link.prop("title", "Комментарий расположен на другой странице");
+						link.addClass("otherPage");
+					} else {
+						link = $("<span><a href='" + href + "'>" + nick + "</a></span>");
+					}
+					var answerClass = "answer";
+					link.addClass(answerClass);
+					link.prop("commentId", commentId);
 
-					link.click(function() {
+					$("a", link).click(function() {
 						markCommentAsReaded(replyCommentId);
 						markCommentAsReaded(commentId, true);
 					});
@@ -118,20 +142,51 @@ var execute = function (body) {
 						answers.css("font-size", "smaller");
 						container.append(answers);
 					}
+					var divider = $("<span>, </span>");
 					if (answers.children().length) {
-						answers.append(", ");
+						answers.append(divider.clone());
 					}
 					answers.append(link);
+					// sorting by commentId
+					if ($(".otherPage", answers).length) {
+						var sortedLinks = $("." + answerClass, answers).toArray().sort(function (a1, a2) {
+							var commentId1 = $(a1).prop("commentId");
+							var commentId2 = $(a2).prop("commentId");
+							return commentId1 - commentId2;
+						});
+						answers.children().remove();
+						$.each(sortedLinks, function(index, value) {
+							if (answers.children().length) {
+								answers.append(divider.clone());
+							}
+							answers.append(value);
+							$("a", value).click(function() {
+								markCommentAsReaded(replyCommentId);
+								markCommentAsReaded(commentId, true);
+							});
+						});
+					}
 				});
+			}
+
+			$(".title").has("a[data-samepage='samePage']").each(function(index) {
+				processReplyMessage($(this), url);
 			});
 
-
-			$(".msg[id^='comment-']").each(function(index) {
-				var commentId = $(this).prop("id").match(/comment-(\d+)/)[1];
-				if (localStorage.getItem(keyPrefix + commentId)) {
-					markCommentAsReaded(commentId);
-				}
+			// other pages loading
+			$("strong.page-number", $("#comments")).nextAll("a.page-number").each(function() {
+				var pageNumber = $(this).text();
+				if (/\d+/.test(pageNumber)){
+					var pageUrl = $(this).attr("href").replace(/#.*$/, "");
+					var page = $("<div></div>");
+					page.load(pageUrl, function() {
+						$(".title", page).has("a[data-samepage!='samePage']").each(function() {
+							processReplyMessage($(this), pageUrl, true);
+						});
+					});
+				}	
 			});
+
 		});
 
     }
