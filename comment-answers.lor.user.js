@@ -3,7 +3,7 @@
 // @description Ответы на комментарии для linux.org.ru. Все страницы после текущей загружаются в фоне, что может увеличить трафик.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.6
+// @version 0.7
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -36,6 +36,7 @@ var execute = function (body) {
 		execute(function() {
 
 			var opacity = 0.5;
+			var defaultOpacity = 1;
 			var multiplier = 50;
 			var keyPrefix = 'comment-';
 
@@ -69,7 +70,9 @@ var execute = function (body) {
 					localStorage.setItem(key, readedDate);
 				}
 				
-				var commentText = $('.sign', $('#comment-' + commentId)).prevAll();
+				var comment = $('#comment-' + commentId);
+				comment.addClass('readed');
+				var commentText = $('.sign', comment).prevAll();
 
 				commentText.prop('title', 'Прочитано: ' + readedDate);
 
@@ -82,11 +85,47 @@ var execute = function (body) {
 				}
 			};
 
+			var markCommentAsUnreaded = function (commentId, isDelay) {
+				var key = keyPrefix + commentId;
+				localStorage.removeItem(key);
+				
+				var comment = $('#comment-' + commentId);
+				comment.removeClass('readed');
+				var commentText = $('.sign', comment).prevAll();
+
+				commentText.prop('title', '');
+
+				if (isDelay) {
+					var length = commentText.text().length;
+					var delay = length * multiplier;
+					commentText.delay(delay).fadeTo('fast', defaultOpacity);
+				} else {
+					commentText.fadeTo('fast', defaultOpacity);
+				}
+			};
+
+			var toggleCommentAsReaded = function (commentId, isDelay) {
+				var comment = $('#comment-' + commentId);
+				if (comment.hasClass('readed')) {
+					markCommentAsUnreaded(commentId, isDelay);
+				} else {
+					markCommentAsReaded(commentId, isDelay);
+				}
+			};
+
 			$(".msg[id^='comment-']").each(function(index) {
 				var commentId = $(this).prop("id").match(/comment-(\d+)/)[1];
 				if (localStorage.getItem(keyPrefix + commentId)) {
 					markCommentAsReaded(commentId);
 				}
+
+				var marker = $("<a href='javascript:void(0);'>Отметить как прочитанное</a>");
+				marker.click(function() {
+					toggleCommentAsReaded(commentId);
+				});
+				var container = $('<li/>');
+				container.append(marker);
+				$(".reply ul", $(this)).append(container);
 			});
 
 			var url = $(location).attr("href");
