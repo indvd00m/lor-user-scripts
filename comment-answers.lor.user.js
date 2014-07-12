@@ -119,7 +119,8 @@ var execute = function (body) {
 					markCommentAsReaded(commentId);
 				}
 
-				var marker = $("<a href='javascript:void(0);'>Отметить как прочитанное</a>");
+				var marker = $("<a href='javascript:void(0);'>Прочитано</a>");
+				marker.prop('title', 'Отметить как прочитанное');
 				marker.click(function() {
 					toggleCommentAsReaded(commentId);
 				});
@@ -173,12 +174,11 @@ var execute = function (body) {
 						markCommentAsReaded(commentId, true);
 					});
 
-					var container = $(".msg_body", $(this));
+					var container = $(".reply", $(this));
 					var answersClass = "answers";
 					var answers = $("." + answersClass, container);
 					if (!answers.length) {
-						answers = $("<div class='" + answersClass + "'>Ответы: </div>");
-						answers.css("font-size", "smaller");
+						answers = $("<span class='" + answersClass + "'> Ответы: </span>");
 						container.append(answers);
 					}
 					var divider = $("<span>, </span>");
