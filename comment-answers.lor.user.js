@@ -3,7 +3,7 @@
 // @description Ответы на комментарии для linux.org.ru. Все страницы после текущей загружаются в фоне, что может увеличить трафик.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.7
+// @version 0.8
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -138,6 +138,77 @@ var execute = function (body) {
 			}
 			url = url.replace(/#.*$/, "");
 
+			var answerClass = "answer";
+
+			var prepareAnswerLink = function (link, level) {
+				if (level == null)
+					level = 1;
+				var commentId = link.closest('.' + answerClass).attr("commentId");
+				var replyCommentId = link.closest('.' + answerClass).attr("replyCommentId");
+				link.click(function() {
+					markCommentAsReaded(replyCommentId);
+					markCommentAsReaded(commentId, true);
+				});
+				var popupClass = "popup";
+				var hov = function() {
+					setTimeout(function () {
+						if ($("." + answerClass + ":hover:not(.otherPage)").length > 0) {
+							return;
+						}
+						if ($("." + popupClass + ":hover").length == 0) {
+							$("." + popupClass).remove();
+						}
+					}, 500);
+				};
+				link.hover(
+					function() {
+						if (link.closest('.' + answerClass).hasClass('otherPage'))
+							return;
+						if ($('.' + popupClass + ' #comment-' + commentId).length)
+							return;
+						$("." + popupClass).each(function() {
+							var popupLevel = $(this).attr('level');
+							if (popupLevel >= level)
+								$(this).remove();
+						});
+						var comment = $('#comment-' + commentId);
+						var popup = $('<div></div>');
+						popup.addClass(popupClass);
+						popup.attr('level', level);
+						popup.append(comment.clone());
+						$('body').append(popup);
+						popup.hover(function(){}, hov);
+						$('.' + answerClass + ' a', popup).each(function() {
+							prepareAnswerLink($(this), level + 1);
+						});
+
+						popup.css('z-index', '10');
+						popup.css('position', 'absolute');
+
+						var padding = 5;
+						var indent = 10 + level * 10;
+						if (link.offset().left < $(window).width() / 2) {
+							popup.css('right', indent + 'px');
+							popup.css('width', ($(window).width() - link.offset().left - indent - padding * 2) + 'px');
+						} else {
+							popup.css('left', indent + 'px');
+							popup.css('width', (link.offset().left + link.width() - indent - padding * 2) + 'px');
+						}
+						if (link.offset().top - $(window).scrollTop() < $(window).height() / 2) {
+							popup.css('top', (link.offset().top + link.height() + indent) + 'px');
+						} else {
+							popup.css('top', (link.offset().top - popup.height() - link.height() - indent) + 'px');
+						}
+
+						popup.css('background-color', comment.css('background-color'));
+						popup.css('box-shadow', '5px 5px 10px rgba(0,0,0,.4)');
+						popup.css('border-radius', '5px');
+						popup.css('border', 'solid 1px green');
+						popup.css('padding', padding + 'px');
+					}, hov
+				);
+			};
+
 			var processReplyMessage = function (msgTitle, msgPageUrl, otherPage) {
 
 				var replyUrl = $("a", msgTitle).prop("href");
@@ -165,14 +236,11 @@ var execute = function (body) {
 					} else {
 						link = $("<span><a href='" + href + "'>" + nick + "</a></span>");
 					}
-					var answerClass = "answer";
 					link.addClass(answerClass);
-					link.prop("commentId", commentId);
+					link.attr("commentId", commentId);
+					link.attr("replyCommentId", replyCommentId);
 
-					$("a", link).click(function() {
-						markCommentAsReaded(replyCommentId);
-						markCommentAsReaded(commentId, true);
-					});
+					prepareAnswerLink($("a", link));
 
 					var container = $(".reply", $(this));
 					var answersClass = "answers";
@@ -189,8 +257,8 @@ var execute = function (body) {
 					// sorting by commentId
 					if ($(".otherPage", answers).length) {
 						var sortedLinks = $("." + answerClass, answers).toArray().sort(function (a1, a2) {
-							var commentId1 = $(a1).prop("commentId");
-							var commentId2 = $(a2).prop("commentId");
+							var commentId1 = $(a1).attr("commentId");
+							var commentId2 = $(a2).attr("commentId");
 							return commentId1 - commentId2;
 						});
 						answers.children().remove();
@@ -199,10 +267,7 @@ var execute = function (body) {
 								answers.append(divider.clone());
 							}
 							answers.append(value);
-							$("a", value).click(function() {
-								markCommentAsReaded(replyCommentId);
-								markCommentAsReaded(commentId, true);
-							});
+							prepareAnswerLink($("a", value));
 						});
 					}
 				});
