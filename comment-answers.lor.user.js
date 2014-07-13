@@ -151,17 +151,45 @@ var execute = function (body) {
 				});
 				var popupClass = "popup";
 				var hov = function() {
+					if (window.opera && window.opera.buildNumber) {
+						$(this).data('hovering', false);
+					}
 					setTimeout(function () {
-						if ($("." + answerClass + ":hover:not(.otherPage)").length > 0) {
-							return;
+						if (window.opera && window.opera.buildNumber) {
+							var cnt = 0;
+							$("." + answerClass + ":not(.otherPage)").each(function () {
+								if ($("a", $(this)).data('hovering'))
+									cnt++;
+							});
+							if (cnt > 0)
+								return;
+						} else {
+							if ($("." + answerClass + ":hover:not(.otherPage)").length > 0) {
+								return;
+							}
 						}
-						if ($("." + popupClass + ":hover").length == 0) {
-							$("." + popupClass).remove();
+							
+						if (window.opera && window.opera.buildNumber) {
+							var cnt = 0;
+							$("." + popupClass).each(function () {
+								if ($(this).data('hovering'))
+									cnt++;
+							});
+							if (cnt == 0) {
+								$("." + popupClass).remove();
+							}
+						} else {
+							if ($("." + popupClass + ":hover").length == 0) {
+								$("." + popupClass).remove();
+							}
 						}
 					}, 500);
 				};
 				link.hover(
 					function() {
+						if (window.opera && window.opera.buildNumber) {
+							$(this).data('hovering', true);
+						}
 						if (link.closest('.' + answerClass).hasClass('otherPage'))
 							return;
 						if ($('.' + popupClass + ' #comment-' + commentId).length)
@@ -177,7 +205,11 @@ var execute = function (body) {
 						popup.attr('level', level);
 						popup.append(comment.clone());
 						$('body').append(popup);
-						popup.hover(function(){}, hov);
+						popup.hover(function(){
+							if (window.opera && window.opera.buildNumber) {
+								$(this).data('hovering', true);
+							}
+						}, hov);
 						$('.' + answerClass + ' a', popup).each(function() {
 							prepareAnswerLink($(this), level + 1);
 						});
