@@ -3,7 +3,7 @@
 // @description Ответы на комментарии для linux.org.ru. Все страницы после текущей загружаются в фоне, что может увеличить трафик.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.8.1
+// @version 0.8.2
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -114,6 +114,7 @@ var execute = function (body) {
 			};
 
 			$(".msg[id^='comment-']").each(function(index) {
+				var comment = $(this);
 				var commentId = $(this).prop("id").match(/comment-(\d+)/)[1];
 				if (localStorage.getItem(keyPrefix + commentId)) {
 					markCommentAsReaded(commentId);
@@ -130,8 +131,13 @@ var execute = function (body) {
 				var markerTree = $("<a href='javascript:void(0);'>+ветка</a>");
 				markerTree.prop('title', 'Отметить прочитанными всю ветку сообщений');
 				markerTree.click(function() {
+					var readed = comment.hasClass('readed');
 					var markTreeAsReaded = function (commentId) {
-						toggleCommentAsReaded(commentId);
+						if (readed) {
+							markCommentAsUnreaded(commentId);
+						} else {
+							markCommentAsReaded(commentId);
+						}
 						$('.' + answerClass, $(".msg[id='comment-" + commentId + "']")).each(function () {
 							markTreeAsReaded($(this).attr('commentId'));
 						});
@@ -167,7 +173,7 @@ var execute = function (body) {
 					markCommentAsReaded(commentId, true);
 				});
 				var popupClass = "popup";
-				var hov = function() {
+				var out = function() {
 					if (window.opera && window.opera.buildNumber) {
 						$(this).data('hovering', false);
 					}
@@ -220,14 +226,15 @@ var execute = function (body) {
 						var popup = $('<div></div>');
 						popup.addClass(popupClass);
 						popup.attr('level', level);
-						popup.append(comment.clone());
+						popup.append(comment.clone(true));
 						$('body').append(popup);
 						popup.hover(function(){
 							if (window.opera && window.opera.buildNumber) {
 								$(this).data('hovering', true);
 							}
-						}, hov);
+						}, out);
 						$('.' + answerClass + ' a', popup).each(function() {
+							$(this).off();
 							prepareAnswerLink($(this), level + 1);
 						});
 
@@ -254,7 +261,7 @@ var execute = function (body) {
 						popup.css('border-radius', '5px');
 						popup.css('border', 'solid 1px green');
 						popup.css('padding', padding + 'px');
-					}, hov
+					}, out
 				);
 			};
 
