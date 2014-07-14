@@ -3,7 +3,7 @@
 // @description Ответы на комментарии для linux.org.ru. Все страницы после текущей загружаются в фоне, что может увеличить трафик.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.8
+// @version 0.8.1
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -119,13 +119,30 @@ var execute = function (body) {
 					markCommentAsReaded(commentId);
 				}
 
-				var marker = $("<a href='javascript:void(0);'>Прочитано</a>");
-				marker.prop('title', 'Отметить как прочитанное');
-				marker.click(function() {
+				var markerComment = $("<a href='javascript:void(0);'>Прочитано</a>");
+				markerComment.prop('title', 'Отметить как прочитанное');
+				markerComment.click(function() {
 					toggleCommentAsReaded(commentId);
 				});
 				var container = $('<li/>');
-				container.append(marker);
+				container.append(markerComment);
+
+				var markerTree = $("<a href='javascript:void(0);'>+ветка</a>");
+				markerTree.prop('title', 'Отметить прочитанными всю ветку сообщений');
+				markerTree.click(function() {
+					var markTreeAsReaded = function (commentId) {
+						toggleCommentAsReaded(commentId);
+						$('.' + answerClass, $(".msg[id='comment-" + commentId + "']")).each(function () {
+							markTreeAsReaded($(this).attr('commentId'));
+						});
+					};
+					markTreeAsReaded(commentId);
+				});
+
+				var container = $('<li/>');
+				container.append(markerComment);
+				container.append(' ');
+				container.append(markerTree);
 				$(".reply ul", $(this)).append(container);
 			});
 
