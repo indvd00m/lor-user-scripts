@@ -3,7 +3,7 @@
 // @description Схожесть интересов пользователя по тэгам для linux.org.ru.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.1.0
+// @version 0.1.1
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -36,7 +36,7 @@ var execute = function (body) {
 		execute(function() {
 
 			var usersTags = {};
-			var tagColor;
+			var tagColor = null;
 
 			var parseTags = function(nickname, fromContainer) {
 				var favoriteTags = new Array();
@@ -133,8 +133,9 @@ var execute = function (body) {
 
 			var linkColor = $('#loginGreating > a:first').css('color');
 
-			$('#bd').each(function() {
-				var container = $(this);
+			$('.vcard').each(function() {
+				var vcard = $(this);
+				var container = $(this).parents('#bd');
 				var nickname = $('.vcard .nickname', container).text();
 				if (nickname != myLogin) {
 					loadTags([nickname, myLogin], function() {
@@ -154,7 +155,7 @@ var execute = function (body) {
 						element.append(' ' + (similarity.similarity * 100).toFixed(2) + ' % [ ');
 						element.append(similarity.similarityText);
 						element.append(' ]');
-						$('.vcard', container).after(element);
+						vcard.after(element);
 					});
 				}
 			});
