@@ -161,15 +161,19 @@ var execute = function (body) {
 
 		var answerClass = "answer";
 
-		var prepareAnswerLink = function (link, level) {
-			if (level == null)
-				level = 1;
+		var addMouseHandlers = function(link) {
 			var commentId = link.closest('.' + answerClass).attr("commentId");
 			var replyCommentId = link.closest('.' + answerClass).attr("replyCommentId");
 			link.click(function() {
 				markCommentAsReaded(replyCommentId);
 				markCommentAsReaded(commentId, true);
 			});
+		};
+
+		var prepareAnswerLink = function (link, level) {
+			if (level == null)
+				level = 1;
+			var commentId = link.closest('.' + answerClass).attr("commentId");
 			var popupClass = "popup";
 			var out = function() {
 				if (window.opera && window.opera.buildNumber) {
@@ -233,6 +237,7 @@ var execute = function (body) {
 					}, out);
 					$('.' + answerClass + ' a', popup).each(function() {
 						$(this).off();
+						addMouseHandlers($(this));
 						prepareAnswerLink($(this), level + 1);
 					});
 
@@ -294,6 +299,7 @@ var execute = function (body) {
 				link.attr("commentId", commentId);
 				link.attr("replyCommentId", replyCommentId);
 
+				addMouseHandlers($("a", link));
 				prepareAnswerLink($("a", link));
 
 				var container = $(".reply", $(this));
@@ -321,6 +327,7 @@ var execute = function (body) {
 							answers.append(divider.clone());
 						}
 						answers.append(value);
+						addMouseHandlers($("a", value));
 						prepareAnswerLink($("a", value));
 					});
 				}
