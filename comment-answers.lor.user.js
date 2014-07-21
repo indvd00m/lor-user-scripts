@@ -3,7 +3,7 @@
 // @description Ответы на комментарии для linux.org.ru. Все страницы после текущей загружаются в фоне, что может увеличить трафик.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.8.5
+// @version 0.8.6
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -111,6 +111,18 @@ var execute = function (body) {
 			}
 		};
 
+		var getCommentContainer = function(comment) {
+			var container = $(".reply", comment);
+			if (container.length == 0) { // removed comment
+				container = $('<div/>');
+				container.addClass('reply');
+				container.append($('<ul/>'));
+				var sign = $(".sign", comment);
+				sign.after(container);
+			}
+			return container;
+		};
+
 		$(".msg[id^='comment-']").each(function(index) {
 			var comment = $(this);
 			var commentId = $(this).prop("id").match(/comment-(\d+)/)[1];
@@ -123,8 +135,6 @@ var execute = function (body) {
 			markerComment.click(function() {
 				toggleCommentAsReaded(commentId);
 			});
-			var container = $('<li/>');
-			container.append(markerComment);
 
 			var markerTree = $("<a href='javascript:void(0);'>+ветка</a>");
 			markerTree.prop('title', 'Отметить прочитанными всю ветку сообщений');
@@ -147,7 +157,7 @@ var execute = function (body) {
 			container.append(markerComment);
 			container.append(' ');
 			container.append(markerTree);
-			$(".reply ul", $(this)).append(container);
+			$("ul", getCommentContainer($(this))).append(container);
 		});
 
 		var url = $(location).attr("href");
@@ -328,7 +338,7 @@ var execute = function (body) {
 				addMouseHandlers($("a", link));
 				prepareAnswerLink($("a", link));
 
-				var container = $(".reply", $(this));
+				var container = getCommentContainer($(this));
 				var answersClass = "answers";
 				var answers = $("." + answersClass, container);
 				if (!answers.length) {
