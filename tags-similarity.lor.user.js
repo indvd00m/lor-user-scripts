@@ -3,7 +3,7 @@
 // @description Схожесть интересов пользователя по тэгам для linux.org.ru.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.1.2
+// @version 0.1.3
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -160,6 +160,8 @@ var execute = function (body) {
 
 		$('.msg .sign').each(function() {
 			var nickname = $("a[itemprop='creator']", $(this)).text();
+			if (nickname == null || nickname == '')
+				return;
 			var link = $("<a href='javascript:void(0);'>Теги</a>");
 			link.addClass('similarity');
 			link.prop('title', 'Посчитать совпадение тегов');
