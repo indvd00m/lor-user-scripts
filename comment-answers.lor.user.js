@@ -3,7 +3,7 @@
 // @description Ответы на комментарии для linux.org.ru. Все страницы после текущей загружаются в фоне, что может увеличить трафик.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.8.4
+// @version 0.8.5
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -233,6 +233,19 @@ var execute = function (body) {
 					popup.addClass(popupClass);
 					popup.attr('level', level);
 					popup.append(comment.clone(true));
+
+					var close = $('<button/>');
+					close.text('x');
+					close.prop('title', 'Закрыть текущее окно и выше по уровню');
+					close.click(function() {
+						$("." + popupClass).each(function() {
+							var popupLevel = $(this).attr('level');
+							if (popupLevel >= level)
+								$(this).remove();
+						});
+					});
+					$('.title', popup).prepend(close);
+
 					$('body').append(popup);
 					popup.hover(function(){
 						if (window.opera && window.opera.buildNumber) {
