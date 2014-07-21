@@ -3,7 +3,7 @@
 // @description Ответы на комментарии для linux.org.ru. Все страницы после текущей загружаются в фоне, что может увеличить трафик.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.8.3
+// @version 0.8.4
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -171,9 +171,13 @@ var execute = function (body) {
 		};
 
 		var prepareAnswerLink = function (link, level) {
+			var commentId = link.closest('.' + answerClass).attr("commentId");
+			addPopupToLink(link, commentId, level);
+		};
+
+		var addPopupToLink = function (link, commentId, level) {
 			if (level == null)
 				level = 1;
-			var commentId = link.closest('.' + answerClass).attr("commentId");
 			var popupClass = "popup";
 			var out = function() {
 				if (window.opera && window.opera.buildNumber) {
@@ -240,6 +244,13 @@ var execute = function (body) {
 						addMouseHandlers($(this));
 						prepareAnswerLink($(this), level + 1);
 					});
+					$(".title", popup).has("a[data-samepage='samePage']").each(function(index) {
+						$("a", $(this)).off();
+						var replyUrl = $("a", $(this)).prop("href");
+						var replyCommentId = replyUrl.match(/.*[\?\&]?cid=(\d+).*/)[1];
+
+						addPopupToLink($("a", $(this)), replyCommentId, level + 1);
+					});
 
 					popup.css('z-index', '10');
 					popup.css('position', 'absolute');
@@ -272,6 +283,8 @@ var execute = function (body) {
 
 			var replyUrl = $("a", msgTitle).prop("href");
 			var replyCommentId = replyUrl.match(/.*[\?\&]?cid=(\d+).*/)[1];
+
+			addPopupToLink($("a", msgTitle), replyCommentId);
 
 			var nick = $("a[itemprop='creator']", msgTitle.next()).text();
 			if (nick == null || nick == "")
