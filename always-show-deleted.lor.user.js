@@ -3,7 +3,7 @@
 // @description По возможности всегда показывать удалённые комментарии в темах на linux.org.ru. Как следствие - такие темы загружаются полностью, а не постранично.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.1.1
+// @version 0.1.2
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -42,6 +42,8 @@ var execute = function (body) {
 
 		var isNeedProcess = function(link) {
 			if (link.closest('.answer:not(.otherPage)').length > 0)
+				return false;
+			if (link.attr('data-samepage') == 'samePage')
 				return false;
 			var href = link.attr('href');
 			if (/\.\w+$/.test(href))
