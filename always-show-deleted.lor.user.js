@@ -3,7 +3,7 @@
 // @description По возможности всегда показывать удалённые комментарии в темах на linux.org.ru. Как следствие - такие темы загружаются полностью, а не постранично.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.1.2
+// @version 0.1.3
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -33,54 +33,58 @@ var execute = function (body) {
 
 	execute(function() {
 
-		var csrf = $(':input[name="csrf"]:first').val();
-		if (csrf == null) {
-			csrf = localStorage.getItem('csrf');
-		} else {
-			localStorage.setItem('csrf', csrf);
-		}
+		$script.ready('jquery', function() {
 
-		var isNeedProcess = function(link) {
-			if (link.closest('.answer:not(.otherPage)').length > 0)
-				return false;
-			if (link.attr('data-samepage') == 'samePage')
-				return false;
-			var href = link.attr('href');
-			if (/\.\w+$/.test(href))
-				return false;
-			if (/^\D+$/.test(href))
-				return false;
-			return true;
-		};
+			var csrf = $(':input[name="csrf"]:first').val();
+			if (csrf == null) {
+				csrf = localStorage.getItem('csrf');
+			} else {
+				localStorage.setItem('csrf', csrf);
+			}
 
-		var processLink = function(link) {
-			var href = link.attr('href');
-			var text = link.text();
-			if (!isNeedProcess(link))
-				return;
-			link.prop('title', link.prop('title') + ' [Будут показаны удалённые комментарии]');
-			link.click(function() {
-				var form = $('<form/>');
-				form.attr('action', href);
-				form.attr('method', 'POST');
-				form.append($('<input name="csrf" value="' + csrf + '">'));
-				form.append($('<input name="deleted" value="1">'));
-				form.submit();
-				return false;
-			});
-		};
+			var isNeedProcess = function(link) {
+				if (link.closest('.answer:not(.otherPage)').length > 0)
+					return false;
+				if (link.attr('data-samepage') == 'samePage')
+					return false;
+				var href = link.attr('href');
+				if (/\.\w+$/.test(href))
+					return false;
+				if (/^\D+$/.test(href))
+					return false;
+				return true;
+			};
 
-		if (csrf != null) {
-			$('a[href*="forum"]').each(function() {
-				processLink($(this));
-			});
-			$('a[href*="news"]').each(function() {
-				processLink($(this));
-			});
-			$('a[href*="gallery"]').each(function() {
-				processLink($(this));
-			});
-		}
+			var processLink = function(link) {
+				var href = link.attr('href');
+				var text = link.text();
+				if (!isNeedProcess(link))
+					return;
+				link.prop('title', link.prop('title') + ' [Будут показаны удалённые комментарии]');
+				link.click(function() {
+					var form = $('<form/>');
+					form.attr('action', href);
+					form.attr('method', 'POST');
+					form.append($('<input name="csrf" value="' + csrf + '">'));
+					form.append($('<input name="deleted" value="1">'));
+					form.submit();
+					return false;
+				});
+			};
+
+			if (csrf != null) {
+				$('a[href*="forum"]').each(function() {
+					processLink($(this));
+				});
+				$('a[href*="news"]').each(function() {
+					processLink($(this));
+				});
+				$('a[href*="gallery"]').each(function() {
+					processLink($(this));
+				});
+			}
+
+		});
 
 	});
 
