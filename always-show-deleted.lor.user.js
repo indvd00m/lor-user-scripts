@@ -3,7 +3,7 @@
 // @description По возможности всегда показывать удалённые комментарии в темах на linux.org.ru. Как следствие - такие темы загружаются полностью, а не постранично.
 // @author indvd00m <gotoindvdum [at] gmail [dot] com>
 // @license Creative Commons Attribution 3.0 Unported
-// @version 0.1.3
+// @version 0.1.4
 // @namespace http://www.linux.org.ru/*
 // @namespace https://www.linux.org.ru/*
 // @include http://www.linux.org.ru/*
@@ -67,6 +67,7 @@ var execute = function (body) {
 					form.attr('method', 'POST');
 					form.append($('<input name="csrf" value="' + csrf + '">'));
 					form.append($('<input name="deleted" value="1">'));
+					$('body').append(form);
 					form.submit();
 					return false;
 				});
